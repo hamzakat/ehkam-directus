@@ -1,0 +1,94 @@
+version: "3"
+services:
+  database:
+    container_name: ehkam_database
+    image: duvel/postgis:15-3.3
+    volumes:
+      - ./data/database:/var/lib/postgresql/data
+    networks:
+      - directus
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    restart: unless-stopped
+  cache:
+    container_name: ehkam_cache
+    image: redis:6
+    networks:
+      - directus
+    restart: unless-stopped
+  directus:
+    container_name: ehkam_directus
+    image: directus/directus:latest
+    ports:
+      - 8055:8055
+    volumes:
+      # By default, uploads are stored in /directus/uploads
+      # Always make sure your volumes matches the storage root when using
+      # local driver
+      - ./uploads:/directus/uploads
+      # Make sure to also mount the volume when using SQLite
+      # - ./database:/directus/database
+      # If you want to load extensions from the host
+      # - ./extensions:/directus/extensions
+    networks:
+      - directus
+    depends_on:
+      - cache
+      - database
+    environment:
+      KEY: ${KEY}
+      SECRET: ${SECRET}
+
+      DB_CLIENT: "pg"
+      DB_HOST: "database"
+      DB_PORT: "5432"
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      CACHE_ENABLED: "false"
+      CACHE_STORE: "redis"
+      CACHE_REDIS: "redis://cache:6379"
+
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ACCESS_TOKEN_TTL: "7d"
+      REFRESH_TOKEN_TTL: "2y"
+
+      # Make sure to set this in production
+      # (see https://docs.directus.io/self-hosted/config-options#general)
+     # PUBLIC_URL: 'https://ehkam.duckdns.org'
+    restart: unless-stopped
+
+
+  nginx:
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: always
+    ports:
+      # Public HTTP Port:
+      - '80:80'
+      # Public HTTPS Port:
+      - '443:443'
+      - '127.0.0.1:81:81'
+    environment:
+      DB_SQLITE_FILE: "/data/database.sqlite"
+      DISABLE_IPV6: 'true'
+    volumes:
+      - ./nginx_data:/data
+      - ./letsencrypt:/etc/letsencrypt
+    healthcheck:
+      test: ["CMD", "/bin/check-health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - directus
+
+
+
+networks:
+  directus:
