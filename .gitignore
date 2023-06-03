@@ -1,0 +1,6 @@
+uploads
+nginx_data
+letsencrypt
+data
+.env
+*.tar.gz
