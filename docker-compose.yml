@@ -2,7 +2,7 @@ version: "3"
 services:
   database:
     container_name: ehkam_database
-    image: duvel/postgis:15-3.3
+    image: arm64v8/postgres:15
     volumes:
       - ./data/database:/var/lib/postgresql/data
     networks:
