@@ -8,9 +8,9 @@ This repo contains the main Docker compose file for Ehkam backend. It includes t
 
 
 ## TODO
-- [] Add migration data for Directus schema
-- [] Import Directus schema after running the Docker Compose to setup the database properly
-- [] Add detailed guide on how to setup the backend and dashboard
+- [ ] Add migration data for Directus schema
+- [ ] Import Directus schema after running the Docker Compose to setup the database properly
+- [ ] Add detailed guide on how to setup the backend and dashboard
 
 
 ## Crontab
